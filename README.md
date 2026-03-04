@@ -60,7 +60,10 @@ open Splunk-GOD-Level-Cheatsheet.html   # macOS
 xdg-open Splunk-GOD-Level-Cheatsheet.html  # Linux
 ```
 
-Or visit the live demo → **[oracleo.github.io/Splunk-GOD-Level-Cheatsheet](https://oracleo.github.io/Splunk-GOD-Level-Cheatsheet/Splunk-GOD-Level-Cheatsheet.html)**
+[![Live Demo](https://img.shields.io/badge/🔥_LIVE_DEMO-View_Cheatsheet-f97316?style=for-the-badge&labelColor=0c0800)](https://oracleo.github.io/Splunk-GOD-Level-Cheatsheet/Splunk-GOD-Level-Cheatsheet.html)
+
+<img width="1350" height="627" alt="image" src="https://github.com/user-attachments/assets/b258adf3-b6c5-4de6-8b73-129fb0f5f409" />
+
 
 ---
 
@@ -124,7 +127,7 @@ index=firewall | bucket span=1h _time
 
 ---
 
-## 🪟 Critical Windows Event IDs Reference
+## Critical Windows Event IDs Reference
 
 ```
 AUTHENTICATION          ACCOUNT MGMT            EXECUTION & PERSISTENCE
