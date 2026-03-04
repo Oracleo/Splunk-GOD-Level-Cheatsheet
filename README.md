@@ -12,15 +12,11 @@
 **God-Level SPL Reference for SOC Analysts, Threat Hunters & SIEM Engineers**
 
 [![Live Demo](https://img.shields.io/badge/🔥_LIVE_DEMO-View_Cheatsheet-f97316?style=for-the-badge&labelColor=0c0800)](https://oracleo.github.io/Splunk-GOD-Level-Cheatsheet/Splunk-GOD-Level-Cheatsheet.html)
-[![License](https://img.shields.io/badge/LICENSE-MIT-fbbf24?style=for-the-badge&labelColor=0c0800)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-WELCOME-22c55e?style=for-the-badge&labelColor=0c0800)](CONTRIBUTING.md)
 
 ![Splunk](https://img.shields.io/badge/SPLUNK-SPL-f97316?style=flat-square&labelColor=0c0800)
 ![SOC](https://img.shields.io/badge/ROLE-SOC_ANALYST-fbbf24?style=flat-square&labelColor=0c0800)
 ![ThreatHunting](https://img.shields.io/badge/ROLE-THREAT_HUNTER-ef4444?style=flat-square&labelColor=0c0800)
 ![DFIR](https://img.shields.io/badge/ROLE-DFIR-2dd4bf?style=flat-square&labelColor=0c0800)
-![HTML](https://img.shields.io/badge/BUILT_WITH-HTML_·_CSS_·_JS-fbbf24?style=flat-square&labelColor=0c0800)
-
 
 </div>
 
@@ -71,22 +67,22 @@ xdg-open Splunk-GOD-Level-Cheatsheet.html  # Linux
 
 
 ```
-SEARCH BASICS            │  AGGREGATION              │  FIELD MANIPULATION
-─────────────────────────┼───────────────────────────┼────────────────────────
-index= sourcetype=        │  | stats count by         │  | eval if() case()
-| search | where          │  | stats dc() values()    │  | eval round() lower()
+SEARCH BASICS             │  AGGREGATION               │  FIELD MANIPULATION
+───────────────────────── ┼────────────────────────── ─┼────────────────────────
+index= sourcetype=        │  | stats count by          │  | eval if() case()
+| search | where          │  | stats dc() values()     │  | eval round() lower()
 | table | sort | dedup    │  | timechart span=1h       │  | rex "(?P<name>regex)"
 | top | rare | head       │  | eventstats | streamstats│  | spath | convert
 | rename | fields         │  | chart over by           │  | rex mode=sed
 
-ENRICHMENT               │  THREAT HUNTING           │  PRODUCTION ALERTS
-─────────────────────────┼───────────────────────────┼────────────────────────
-| lookup OUTPUT           │  Brute force (4625)       │  Scheduled every 5min
-| lookup OUTPUTNEW        │  Lateral movement (4624)  │  Lookup-driven whitelists
-| inputlookup             │  Pass-the-Hash NTLM       │  tstats accelerated
-| outputlookup            │  Impossible travel        │  FP reduction patterns
-| tstats from datamodel=  │  DNS beaconing (dc/stdev) │  Suppress + escalate
-| join | union | append   │  PowerShell encoded (4104)│  Risk scoring with eval
+ENRICHMENT                │  THREAT HUNTING            │  PRODUCTION ALERTS
+───────────────────────── ┼─────────────────────────── ┼────────────────────────
+| lookup OUTPUT           │  Brute force (4625)        │  Scheduled every 5min
+| lookup OUTPUTNEW        │  Lateral movement (4624)   │  Lookup-driven whitelists
+| inputlookup             │  Pass-the-Hash NTLM        │  tstats accelerated
+| outputlookup            │  Impossible travel         │  FP reduction patterns
+| tstats from datamodel=  │  DNS beaconing (dc/stdev)  │  Suppress + escalate
+| join | union | append   │  PowerShell encoded (4104) │  Risk scoring with eval
 ```
 
 
