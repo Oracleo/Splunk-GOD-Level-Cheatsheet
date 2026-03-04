@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Splunk — God Level Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0800;
+    --bg2: #110e03;
+    --panel: #150f04;
+    --panel2: #1a1306;
+    --border: #2a1f08;
+    --border2: #362808;
+    --orange: #f97316;
+    --amber: #fbbf24;
+    --gold: #eab308;
+    --red: #ef4444;
+    --green: #22c55e;
+    --teal: #2dd4bf;
+    --blue: #60a5fa;
+    --violet: #a78bfa;
+    --text: #d4b896;
+    --muted: #5a3f1a;
+    --bright: #fff7ed;
+    --dim: #3d2a0e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 0% 0%, rgba(249,115,22,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 100% 100%, rgba(251,191,36,0.05) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(249,115,22,0.015) 60px),
+      repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(249,115,22,0.015) 60px);
+  }
+
+  /* HEADER */
+  header {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border2);
+  }
+  .header-stripe {
+    height: 4px;
+    background: linear-gradient(90deg, var(--orange), var(--amber), var(--gold), var(--amber), var(--orange));
+    background-size: 300% 100%;
+    animation: stripe 4s linear infinite;
+  }
+  @keyframes stripe { 0%{background-position:0% 0} 100%{background-position:300% 0} }
+
+  .header-inner {
+    padding: 40px 48px 32px;
+    position: relative;
+    z-index: 2;
+  }
+  .header-bg-text {
+    position: absolute;
+    top: -10px; right: -20px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 180px;
+    color: rgba(249,115,22,0.04);
+    letter-spacing: -5px;
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
+  }
+  .eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--orange);
+    margin-bottom: 10px;
+    opacity: 0.9;
+  }
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 9vw, 110px);
+    color: var(--bright);
+    letter-spacing: 4px;
+    line-height: 0.9;
+    text-shadow: 0 0 80px rgba(249,115,22,0.3), 0 4px 0 rgba(0,0,0,0.5);
+  }
+  h1 em { color: var(--orange); font-style: normal; }
+  .header-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 3px;
+    margin-top: 10px;
+  }
+  .header-sub span { color: var(--amber); }
+  .pills {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 5px 12px;
+    letter-spacing: 2px;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+  .pill.o { border-color: rgba(249,115,22,0.5); color: var(--orange); background: rgba(249,115,22,0.07); }
+  .pill.a { border-color: rgba(251,191,36,0.5); color: var(--amber); background: rgba(251,191,36,0.07); }
+  .pill.g { border-color: rgba(34,197,94,0.4); color: var(--green); background: rgba(34,197,94,0.06); }
+
+  /* LOG TICKER */
+  .log-ticker {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .ticker-inner {
+    display: flex;
+    animation: ticker 30s linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-item {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    padding: 0 40px;
+    flex-shrink: 0;
+  }
+  .ticker-item span { color: var(--orange); }
+  @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+  /* SEARCH */
+  .search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 48px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+  }
+  .search-prompt {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--orange);
+    flex-shrink: 0;
+  }
+  #searchInput {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--amber);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    flex: 1;
+    caret-color: var(--orange);
+  }
+  #searchInput::placeholder { color: var(--muted); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border2);
+    padding: 0 48px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: var(--panel);
+    gap: 0;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 14px 16px;
+    cursor: pointer;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    user-select: none;
+    text-transform: uppercase;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+
+  /* CONTENT */
+  .content { padding: 40px 48px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .sec-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--bright);
+    letter-spacing: 3px;
+    margin-bottom: 4px;
+  }
+  .sec-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    font-weight: 300;
+    line-height: 1.7;
+    max-width: 720px;
+  }
+
+  /* BOXES */
+  .tip-box {
+    border: 1px solid rgba(249,115,22,0.25);
+    border-left: 3px solid var(--orange);
+    background: rgba(249,115,22,0.05);
+    padding: 14px 18px;
+    margin-bottom: 26px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .tip-box .lbl {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--orange);
+    margin-bottom: 5px;
+  }
+  .int-box {
+    border: 1px solid rgba(251,191,36,0.25);
+    border-left: 3px solid var(--amber);
+    background: rgba(251,191,36,0.05);
+    padding: 14px 18px;
+    margin-bottom: 26px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .int-box .lbl {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--amber);
+    margin-bottom: 5px;
+  }
+
+  /* TABLE */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border2);
+    margin-bottom: 40px;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr {
+    background: rgba(249,115,22,0.07);
+    border-bottom: 1px solid var(--border2);
+  }
+  th {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--orange);
+    padding: 12px 16px;
+    text-align: left;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+  tbody tr {
+    border-bottom: 1px solid rgba(42,31,8,0.6);
+    transition: background 0.15s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(249,115,22,0.03); }
+  td { padding: 13px 16px; vertical-align: top; line-height: 1.55; }
+
+  td.cmd {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--amber);
+    white-space: nowrap;
+    min-width: 160px;
+  }
+  td.spl {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--orange);
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-width: 300px;
+  }
+  td.ex {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: #fde68a;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-width: 280px;
+  }
+  td.job {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 300;
+    max-width: 360px;
+    line-height: 1.6;
+  }
+  td.job strong { color: var(--amber); font-weight: 600; }
+
+  /* BADGES */
+  .b {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    padding: 2px 6px;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+  .b-crit { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .b-soc { background: rgba(249,115,22,0.1); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+  .b-hunt { background: rgba(251,191,36,0.1); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+  .b-ir { background: rgba(45,212,191,0.1); color: var(--teal); border: 1px solid rgba(45,212,191,0.3); }
+  .b-pro { background: rgba(167,139,250,0.1); color: var(--violet); border: 1px solid rgba(167,139,250,0.3); }
+  .b-alert { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+
+  /* QUICK GRID */
+  .qgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  .qcard {
+    background: var(--panel);
+    border: 1px solid var(--border2);
+    padding: 18px;
+  }
+  .qcard-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--orange);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .qi {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(42,31,8,0.5);
+    gap: 10px;
+  }
+  .qi:last-child { border-bottom: none; }
+  .qi-cmd {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--amber);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .qi-desc { font-size: 11px; color: var(--muted); text-align: right; }
+
+  tr.hidden { display: none; }
+
+  /* FOOTER */
+  footer {
+    padding: 24px 48px;
+    border-top: 1px solid var(--border2);
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  footer a { color: var(--orange); text-decoration: none; }
+  footer a:hover { color: var(--amber); }
+  footer span { color: var(--orange); }
+
+  @media (max-width: 768px) {
+    .header-inner, .content, .search-wrap, footer { padding-left: 20px; padding-right: 20px; }
+    .tabs { padding: 0 20px; }
+    h1 { font-size: 60px; }
+    .header-bg-text { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-stripe"></div>
+  <div class="header-inner">
+    <div class="header-bg-text">SPL</div>
+    <div class="eyebrow">// SIEM MASTERY REFERENCE — SEARCH PROCESSING LANGUAGE</div>
+    <h1>SPLU<em>NK</em></h1>
+    <div class="header-sub">GOD LEVEL CHEATSHEET — <span>SOC · THREAT HUNTING · INCIDENT RESPONSE · INTERVIEWS</span></div>
+    <div class="pills">
+      <span class="pill o">SPL QUERIES</span>
+      <span class="pill a">THREAT HUNTING</span>
+      <span class="pill g">ALERT ENGINEERING</span>
+    </div>
+  </div>
+</header>
+
+<div class="log-ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item"><span>index=main</span> sourcetype=syslog | stats count by host</span>
+    <span class="ticker-item"><span>|</span> eval risk_score=case(severity=="critical",10,severity=="high",7,true(),1)</span>
+    <span class="ticker-item"><span>index=windows</span> EventCode=4625 | stats count by src_ip | where count>10</span>
+    <span class="ticker-item"><span>|</span> timechart span=1h count by action</span>
+    <span class="ticker-item"><span>index=firewall</span> action=blocked | top limit=20 dest_ip</span>
+    <span class="ticker-item"><span>|</span> rex field=_raw "(?P&lt;username&gt;user=\w+)"</span>
+    <span class="ticker-item"><span>index=main</span> sourcetype=syslog | stats count by host</span>
+    <span class="ticker-item"><span>|</span> eval risk_score=case(severity=="critical",10,severity=="high",7,true(),1)</span>
+    <span class="ticker-item"><span>index=windows</span> EventCode=4625 | stats count by src_ip | where count>10</span>
+    <span class="ticker-item"><span>|</span> timechart span=1h count by action</span>
+    <span class="ticker-item"><span>index=firewall</span> action=blocked | top limit=20 dest_ip</span>
+    <span class="ticker-item"><span>|</span> rex field=_raw "(?P&lt;username&gt;user=\w+)"</span>
+  </div>
+</div>
+
+<div class="search-wrap">
+  <span class="search-prompt">SPL&gt;</span>
+  <input type="text" id="searchInput" placeholder="search commands, use cases, examples... e.g. 'brute force' or 'stats'" oninput="filterAll()" />
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('overview',this)">OVERVIEW</div>
+  <div class="tab" onclick="showTab('basics',this)">SPL BASICS</div>
+  <div class="tab" onclick="showTab('stats',this)">STATS & AGGREGATION</div>
+  <div class="tab" onclick="showTab('eval',this)">EVAL & FIELDS</div>
+  <div class="tab" onclick="showTab('lookup',this)">LOOKUP & ENRICH</div>
+  <div class="tab" onclick="showTab('hunting',this)">THREAT HUNTING</div>
+  <div class="tab" onclick="showTab('windows',this)">WINDOWS EVENTS</div>
+  <div class="tab" onclick="showTab('network',this)">NETWORK & FIREWALL</div>
+  <div class="tab" onclick="showTab('alerts',this)">ALERT ENGINEERING</div>
+  <div class="tab" onclick="showTab('interview',this)">🎯 INTERVIEW</div>
+</div>
+
+<div class="content">
+
+  <!-- OVERVIEW -->
+  <div id="section-overview" class="section active">
+    <div class="sec-title">MASTER QUICK REFERENCE</div>
+    <div class="sec-desc">Splunk's Search Processing Language (SPL) is the language of SIEM. Every SOC analyst, threat hunter, and IR professional needs to know it cold. This is your god-level reference for interviews and real-world investigations.</div>
+
+    <div class="tip-box">
+      <div class="lbl">// GURU TIP — HOW SPL PIPELINES WORK</div>
+      SPL works like Unix pipes. Each command passes results to the next via <strong style="color:var(--amber)"> | </strong>. The search always starts with <code style="color:var(--orange)">index=</code> or <code style="color:var(--orange)">sourcetype=</code> to narrow data first — then transform, filter, and visualize. <strong style="color:var(--amber)">Time range is your most powerful filter</strong> — always set it. Never run a wildcard search against all time on production.
+    </div>
+
+    <div class="qgrid">
+      <div class="qcard">
+        <div class="qcard-title">BASIC SEARCH STRUCTURE</div>
+        <div class="qi"><span class="qi-cmd">index=</span><span class="qi-desc">Target data index</span></div>
+        <div class="qi"><span class="qi-cmd">sourcetype=</span><span class="qi-desc">Data source format</span></div>
+        <div class="qi"><span class="qi-cmd">host=</span><span class="qi-desc">Filter by hostname</span></div>
+        <div class="qi"><span class="qi-cmd">source=</span><span class="qi-desc">Filter by log file/input</span></div>
+        <div class="qi"><span class="qi-cmd">earliest= latest=</span><span class="qi-desc">Time range bounds</span></div>
+        <div class="qi"><span class="qi-cmd">| head N</span><span class="qi-desc">First N results</span></div>
+        <div class="qi"><span class="qi-cmd">| tail N</span><span class="qi-desc">Last N results</span></div>
+      </div>
+      <div class="qcard">
+        <div class="qcard-title">MOST USED COMMANDS</div>
+        <div class="qi"><span class="qi-cmd">| stats</span><span class="qi-desc">Aggregate statistics</span></div>
+        <div class="qi"><span class="qi-cmd">| eval</span><span class="qi-desc">Create/transform fields</span></div>
+        <div class="qi"><span class="qi-cmd">| table</span><span class="qi-desc">Select fields to display</span></div>
+        <div class="qi"><span class="qi-cmd">| where</span><span class="qi-desc">Filter results</span></div>
+        <div class="qi"><span class="qi-cmd">| sort</span><span class="qi-desc">Order results</span></div>
+        <div class="qi"><span class="qi-cmd">| dedup</span><span class="qi-desc">Remove duplicates</span></div>
+        <div class="qi"><span class="qi-cmd">| rex</span><span class="qi-cmd">Extract fields via regex</span></div>
+      </div>
+      <div class="qcard">
+        <div class="qcard-title">STATS FUNCTIONS</div>
+        <div class="qi"><span class="qi-cmd">count</span><span class="qi-desc">Count events</span></div>
+        <div class="qi"><span class="qi-cmd">dc(field)</span><span class="qi-desc">Distinct count</span></div>
+        <div class="qi"><span class="qi-cmd">sum(field)</span><span class="qi-desc">Sum values</span></div>
+        <div class="qi"><span class="qi-cmd">avg(field)</span><span class="qi-desc">Average</span></div>
+        <div class="qi"><span class="qi-cmd">max(field)</span><span class="qi-desc">Maximum value</span></div>
+        <div class="qi"><span class="qi-cmd">min(field)</span><span class="qi-desc">Minimum value</span></div>
+        <div class="qi"><span class="qi-cmd">values(field)</span><span class="qi-desc">List distinct values</span></div>
+      </div>
+      <div class="qcard">
+        <div class="qcard-title">TIME MODIFIERS</div>
+        <div class="qi"><span class="qi-cmd">earliest=-24h</span><span class="qi-desc">Last 24 hours</span></div>
+        <div class="qi"><span class="qi-cmd">earliest=-7d@d</span><span class="qi-desc">Last 7 days</span></div>
+        <div class="qi"><span class="qi-cmd">earliest=-1h latest=now</span><span class="qi-desc">Last hour</span></div>
+        <div class="qi"><span class="qi-cmd">earliest=@d</span><span class="qi-desc">Start of today</span></div>
+        <div class="qi"><span class="qi-cmd">earliest=@w</span><span class="qi-desc">Start of week</span></div>
+        <div class="qi"><span class="qi-cmd">earliest=@mon</span><span class="qi-desc">Start of month</span></div>
+        <div class="qi"><span class="qi-cmd">span=1h / span=5m</span><span class="qi-desc">Bucket by time</span></div>
+      </div>
+      <div class="qcard">
+        <div class="qcard-title">BOOLEAN & WILDCARDS</div>
+        <div class="qi"><span class="qi-cmd">AND OR NOT</span><span class="qi-desc">Boolean operators</span></div>
+        <div class="qi"><span class="qi-cmd">field=value*</span><span class="qi-desc">Wildcard suffix</span></div>
+        <div class="qi"><span class="qi-cmd">field=*value*</span><span class="qi-desc">Contains match</span></div>
+        <div class="qi"><span class="qi-cmd">NOT field=value</span><span class="qi-desc">Exclude field value</span></div>
+        <div class="qi"><span class="qi-cmd">field IN (a,b,c)</span><span class="qi-desc">List membership</span></div>
+        <div class="qi"><span class="qi-cmd">"exact phrase"</span><span class="qi-desc">Phrase search</span></div>
+        <div class="qi"><span class="qi-cmd">field!=value</span><span class="qi-desc">Not equal</span></div>
+      </div>
+      <div class="qcard">
+        <div class="qcard-title">KEY SOURCETYPES</div>
+        <div class="qi"><span class="qi-cmd">WinEventLog:Security</span><span class="qi-desc">Windows security logs</span></div>
+        <div class="qi"><span class="qi-cmd">WinEventLog:System</span><span class="qi-desc">Windows system logs</span></div>
+        <div class="qi"><span class="qi-cmd">syslog</span><span class="qi-desc">Linux/Unix syslog</span></div>
+        <div class="qi"><span class="qi-cmd">access_combined</span><span class="qi-desc">Apache/web access logs</span></div>
+        <div class="qi"><span class="qi-cmd">pan:traffic</span><span class="qi-desc">Palo Alto firewall</span></div>
+        <div class="qi"><span class="qi-cmd">cisco:asa</span><span class="qi-desc">Cisco ASA firewall</span></div>
+        <div class="qi"><span class="qi-cmd">suricata</span><span class="qi-desc">Suricata IDS/IPS</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPL BASICS -->
+  <div id="section-basics" class="section">
+    <div class="sec-title">SPL BASICS — SEARCH FUNDAMENTALS</div>
+    <div class="sec-desc">The foundational commands every Splunk user must know. These form the backbone of every investigation query.</div>
+    <div class="tip-box">
+      <div class="lbl">// GURU TIP</div>
+      Always narrow with <strong style="color:var(--amber)">index=</strong> and <strong style="color:var(--amber)">sourcetype=</strong> before piping to transforms. Searching all indexes on all time is a performance disaster and will get you noticed by Splunk admins for the wrong reasons.
+    </div>
+    <div class="table-wrap">
+      <table id="table-basics">
+        <thead><tr><th>COMMAND</th><th>SYNTAX</th><th>EXAMPLE</th><th>PURPOSE</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="cmd">Basic Search</td>
+            <td class="spl">index=[idx] sourcetype=[type] [keyword]</td>
+            <td class="ex">index=main sourcetype=syslog error
+index=windows EventCode=4624</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Foundation of every SPL query. Always specify index first for performance. Keywords are implicit AND. Splunk searches raw _raw field by default.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| search</td>
+            <td class="spl">| search [condition]</td>
+            <td class="ex">index=main | search status=failed
+index=web | search src_ip="10.*"</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Post-pipeline filter. Filters results mid-pipeline. Unlike <code style="color:var(--orange)">where</code>, it can use wildcards and string patterns. Use after transforms to filter aggregated results.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| table</td>
+            <td class="spl">| table [field1] [field2] ...</td>
+            <td class="ex">index=windows EventCode=4625
+| table _time, src_ip, user, host</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Select and order fields for display. Removes all other fields from output. Essential for clean, readable results in dashboards and reports. Order of fields matters.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| where</td>
+            <td class="spl">| where [expression]</td>
+            <td class="ex">| where count > 10
+| where src_ip != "192.168.1.1"
+| where isnotnull(username)</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Filter using expressions and eval functions. More powerful than <code style="color:var(--orange)">search</code> for numeric comparisons and null checks. Use <code style="color:var(--orange)">isnotnull()</code> to exclude empty fields.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| sort</td>
+            <td class="spl">| sort [+/-][field]
+| sort -count</td>
+            <td class="ex">| sort -count
+| sort +_time
+| sort -bytes_out limit=20</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Sort results. <code style="color:var(--orange)">-</code> = descending, <code style="color:var(--orange)">+</code> = ascending. Default limit is 10,000 — add <code style="color:var(--orange)">limit=0</code> to remove limit. Always sort your final table for readability.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| dedup</td>
+            <td class="spl">| dedup [field]
+| dedup [field1] [field2]</td>
+            <td class="ex">| dedup src_ip
+| dedup user host
+| dedup 3 src_ip</td>
+            <td class="job"><span class="b b-soc">SOC</span><br>Remove duplicate events. <code style="color:var(--orange)">dedup 3 field</code> keeps 3 copies. Use to get unique lists of IPs, users, or hosts without stat overhead.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| top</td>
+            <td class="spl">| top [limit=N] [field]</td>
+            <td class="ex">| top limit=10 src_ip
+| top limit=20 dest_port
+| top limit=5 user showperc=f</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Top N most frequent values with count and percentage. <code style="color:var(--orange)">showperc=f</code> hides percentage column. Quick way to find most active IPs, users, or ports without a full stats command.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| rare</td>
+            <td class="spl">| rare [limit=N] [field]</td>
+            <td class="ex">| rare limit=10 user_agent
+| rare limit=5 dest_port</td>
+            <td class="job"><span class="b b-hunt">HUNT</span><br>Least frequent values — the opposite of top. <strong>Gold for threat hunting</strong>: rare user agents, unusual ports, infrequent login times. Anomalies hide in the rare, not the common.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| head / tail</td>
+            <td class="spl">| head [N]
+| tail [N]</td>
+            <td class="ex">| head 100
+| sort _time | tail 50</td>
+            <td class="job">Return first/last N events. <code style="color:var(--orange)">tail</code> returns most recent when sorted by time. Use for quick sampling without full result set loading.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| rename</td>
+            <td class="spl">| rename [old] AS [new]</td>
+            <td class="ex">| rename src_ip AS "Source IP"
+| rename EventCode AS "Event ID"</td>
+            <td class="job">Rename fields for cleaner display. Essential when building dashboards or reports for non-technical stakeholders. Human-readable field names in tables.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| fields</td>
+            <td class="spl">| fields [+/-] [field1] [field2]</td>
+            <td class="ex">| fields src_ip, dest_ip, action
+| fields - _raw, _indextime</td>
+            <td class="job"><span class="b b-pro">PRO</span><br>Include (+) or exclude (-) fields. Faster than <code style="color:var(--orange)">table</code> — doesn't reorder, just filters. Removes _raw from results to reduce display size in large searches.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div id="section-stats" class="section">
+    <div class="sec-title">STATS, TIMECHART & AGGREGATION</div>
+    <div class="sec-desc">The most powerful SPL commands for analysis, trending, and detection. If you can write stats and timechart queries fluently, you can answer almost any SOC question.</div>
+    <div class="int-box">
+      <div class="lbl">// 🎯 INTERVIEW GOLD</div>
+      "Write a SPL query to detect brute force logins." Answer: <strong style="color:var(--amber)">index=windows EventCode=4625 | stats count by src_ip, user | where count > 10 | sort -count</strong>. Follow with: "In production I'd add a timechart to see if it's sustained, and a lookup against a known-good IP list to reduce false positives."
+    </div>
+    <div class="table-wrap">
+      <table id="table-stats">
+        <thead><tr><th>COMMAND</th><th>SYNTAX</th><th>EXAMPLE</th><th>PURPOSE</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="cmd">| stats count</td>
+            <td class="spl">| stats count by [field]
+| stats count as [name] by [field]</td>
+            <td class="ex">index=main | stats count by host
+index=windows EventCode=4625
+| stats count as failures by src_ip</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Count events grouped by field. The single most-used SPL command. <code style="color:var(--orange)">as</code> renames the count column. Multiple <code style="color:var(--orange)">by</code> fields for multi-dimensional grouping.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| stats dc()</td>
+            <td class="spl">| stats dc([field]) as [name] by [field]</td>
+            <td class="ex">index=vpn | stats dc(src_ip) as unique_ips by user
+index=dns | stats dc(query) as unique_domains by src_ip</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><span class="b b-hunt">HUNT</span><br>Distinct count — count unique values. <strong>Threat hunting gold</strong>: a user accessing many unique IPs = lateral movement. One IP querying many unique domains = C2 beaconing or DGA.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| stats values()</td>
+            <td class="spl">| stats values([field]) as [name] by [field]</td>
+            <td class="ex">| stats values(dest_ip) as destinations by src_ip
+| stats values(user) as users by src_ip</td>
+            <td class="job"><span class="b b-soc">SOC</span><br>List all distinct values per group. See all IPs a host connected to, or all users who logged into a machine. Essential for lateral movement and account sharing detection.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| stats sum/avg</td>
+            <td class="spl">| stats sum([field]) by [field]
+| stats avg([field]) by [field]</td>
+            <td class="ex">| stats sum(bytes_out) as total_bytes by src_ip
+| stats avg(duration) as avg_dur by dest_ip</td>
+            <td class="job"><span class="b b-soc">SOC</span><br>Sum and average numeric fields. Exfiltration detection: sum bytes_out per src_ip, sort descending — top talkers are your suspects. Average duration anomalies reveal long-lived C2 connections.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| stats multiple</td>
+            <td class="spl">| stats count, dc(field), sum(field) by [field]</td>
+            <td class="ex">index=firewall
+| stats count, dc(dest_ip) as targets, sum(bytes) as total_bytes by src_ip
+| sort -total_bytes</td>
+            <td class="job"><span class="b b-pro">PRO</span><span class="b b-crit">CRITICAL</span><br>Multiple aggregations in one stats command. Single query to get count + unique targets + total bytes per source. This is how pros write efficient investigation queries.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| timechart</td>
+            <td class="spl">| timechart span=[time] [func] by [field]</td>
+            <td class="ex">index=windows EventCode=4625
+| timechart span=1h count by host
+index=firewall action=blocked
+| timechart span=5m count</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><span class="b b-alert">ALERT</span><br>Time-series aggregation for line charts. Shows trends over time. <strong>Attack detection pattern</strong>: spikes in failed logins, blocked connections, or DNS queries over time = automated attack. Add to dashboards.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| chart</td>
+            <td class="spl">| chart [func] over [field] by [field]</td>
+            <td class="ex">| chart count over hour by action
+| chart sum(bytes) over dest_country by protocol</td>
+            <td class="job"><span class="b b-pro">PRO</span><br>Two-dimensional chart — value over one field, split by another. More control than timechart for non-time axes. Use for protocol breakdown by country, action breakdown by hour.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| eventstats</td>
+            <td class="spl">| eventstats [func] as [name] by [field]</td>
+            <td class="ex">| eventstats avg(bytes) as avg_bytes by dest_ip
+| eval anomaly=if(bytes > avg_bytes*3, "YES","NO")</td>
+            <td class="job"><span class="b b-pro">PRO</span><span class="b b-hunt">HUNT</span><br>Like stats but adds results back to each event as new fields without removing original events. Enables per-event anomaly scoring — compare each event to its group average.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| streamstats</td>
+            <td class="spl">| streamstats [func] by [field]</td>
+            <td class="ex">| sort _time
+| streamstats count as login_count by user
+| where login_count > 5</td>
+            <td class="job"><span class="b b-pro">PRO</span><br>Running statistics computed on events as they flow through the pipeline in time order. Running totals, session counting, detecting Nth occurrence. Advanced analytics for behavioral detection.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EVAL -->
+  <div id="section-eval" class="section">
+    <div class="sec-title">EVAL, REX & FIELD MANIPULATION</div>
+    <div class="sec-desc">Create calculated fields, extract data with regex, and transform values. These commands turn raw log data into actionable intelligence.</div>
+    <div class="table-wrap">
+      <table id="table-eval">
+        <thead><tr><th>COMMAND</th><th>SYNTAX</th><th>EXAMPLE</th><th>PURPOSE</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="cmd">| eval (basic)</td>
+            <td class="spl">| eval [newfield]=[expression]</td>
+            <td class="ex">| eval bytes_mb=bytes/1048576
+| eval full_name=first_name." ".last_name
+| eval is_admin=if(group="admins",1,0)</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Create new fields or modify existing ones. Math, string concatenation, conditionals. The most versatile SPL command — used in almost every advanced query.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| eval if()</td>
+            <td class="spl">| eval [field]=if([condition],[true],[false])</td>
+            <td class="ex">| eval severity=if(count>100,"CRITICAL","LOW")
+| eval internal=if(cidrmatch("10.0.0.0/8",src_ip),"YES","NO")</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><span class="b b-alert">ALERT</span><br>Conditional field creation. <code style="color:var(--orange)">cidrmatch()</code> checks IP against CIDR range — key for internal vs external traffic classification. Build risk scoring with if() chains.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| eval case()</td>
+            <td class="spl">| eval [field]=case([cond1],[val1],[cond2],[val2],true(),[default])</td>
+            <td class="ex">| eval risk=case(
+  severity="critical",10,
+  severity="high",7,
+  severity="medium",4,
+  true(),1)</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><span class="b b-alert">ALERT</span><br>Multi-condition evaluation. <strong>Risk scoring gold</strong> — assign numeric scores based on severity, category, or any field. The <code style="color:var(--orange)">true()</code> at the end is the default/else case.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| eval math</td>
+            <td class="spl">| eval [field]=[numeric expression]</td>
+            <td class="ex">| eval mb=round(bytes/1024/1024,2)
+| eval age_days=round((now()-_time)/86400,0)
+| eval pct=round(count/total*100,1)</td>
+            <td class="job"><span class="b b-soc">SOC</span><br>Math operations: +, -, *, /, pow(), round(), floor(), ceiling(). Convert bytes to MB/GB for readable exfiltration reports. Calculate event age from epoch timestamps.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| eval string</td>
+            <td class="spl">| eval [field]=upper/lower/substr/len/replace</td>
+            <td class="ex">| eval user=lower(username)
+| eval domain=substr(url,8,50)
+| eval clean=replace(field,"[^a-zA-Z0-9]","")</td>
+            <td class="job"><span class="b b-pro">PRO</span><br>String manipulation. Normalize usernames to lowercase before stats (avoids ADMIN vs admin counting twice). Extract domain from URL. Strip special chars for comparison.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| rex</td>
+            <td class="spl">| rex field=[field] "(?P&lt;name&gt;pattern)"</td>
+            <td class="ex">| rex field=_raw "user=(?P&lt;username&gt;\w+)"
+| rex field=url "https?://(?P&lt;domain&gt;[^/]+)"
+| rex field=cmd "(?P&lt;exe&gt;[^\s]+\.exe)"</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><span class="b b-pro">PRO</span><br>Extract fields from raw text using named capture groups. When Splunk hasn't parsed a field you need. Extracts usernames, domains, executable names from unstructured logs. Named groups become field names.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| rex mode=sed</td>
+            <td class="spl">| rex mode=sed field=[field] "s/[old]/[new]/g"</td>
+            <td class="ex">| rex mode=sed field=username "s/\\\\[^\\\\]+\\\\//g"
+| rex mode=sed field=url "s/\?.*$//"</td>
+            <td class="job"><span class="b b-pro">PRO</span><br>Sed-style substitution. Remove domain prefixes from usernames (DOMAIN\user → user). Strip URL query strings for cleaner domain analysis. Normalize data before grouping.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| spath</td>
+            <td class="spl">| spath input=[field] path=[jsonpath]</td>
+            <td class="ex">| spath input=_raw path=user.name
+| spath input=json_field path=events{0}.action</td>
+            <td class="job"><span class="b b-pro">PRO</span><br>Extract fields from JSON or XML log data. Modern security tools (EDR, cloud logs) emit JSON — spath navigates the structure. Essential for AWS CloudTrail, CrowdStrike, and modern SIEM data.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| convert</td>
+            <td class="spl">| convert [func]([field]) as [name]</td>
+            <td class="ex">| convert ctime(_time) as readable_time
+| convert num(bytes) as bytes_num
+| convert auto(field)</td>
+            <td class="job">Type conversion and formatting. <code style="color:var(--orange)">ctime()</code> converts epoch to human-readable time string. <code style="color:var(--orange)">num()</code> forces string-to-number conversion for math operations.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- LOOKUP -->
+  <div id="section-lookup" class="section">
+    <div class="sec-title">LOOKUP, ENRICH & CORRELATION</div>
+    <div class="sec-desc">Enrich events with threat intelligence, asset data, and user context. Lookups turn raw IPs into threat actor names, and usernames into department/role context.</div>
+    <div class="tip-box">
+      <div class="lbl">// GURU TIP — LOOKUPS IN PRODUCTION SOC</div>
+      The most powerful Splunk analysts aren't the ones who know the most commands — they're the ones who <strong style="color:var(--amber)">build the best lookup tables</strong>. A threat intel lookup that tags malicious IPs automatically makes every other query smarter. Build once, use everywhere.
+    </div>
+    <div class="table-wrap">
+      <table id="table-lookup">
+        <thead><tr><th>COMMAND</th><th>SYNTAX</th><th>EXAMPLE</th><th>PURPOSE</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="cmd">| lookup</td>
+            <td class="spl">| lookup [lookup_name] [input_field] OUTPUT [output_field]</td>
+            <td class="ex">| lookup threat_intel src_ip OUTPUT threat_category, reputation
+| lookup asset_list hostname OUTPUT owner, department, criticality</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Enrich events from a lookup table (CSV or KV store). Match field value against lookup table, add context columns. Essential for threat intel enrichment, asset context, and user info.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| lookup OUTPUTNEW</td>
+            <td class="spl">| lookup [name] [field] OUTPUTNEW [field]</td>
+            <td class="ex">| lookup geo_ip src_ip OUTPUTNEW country, city, lat, lon</td>
+            <td class="job"><span class="b b-soc">SOC</span><br>OUTPUTNEW only adds the field if it doesn't already exist — prevents overwriting existing data. Use for GeoIP lookups where some IPs might already have location data from another source.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| inputlookup</td>
+            <td class="spl">| inputlookup [lookup_name]
+| inputlookup [lookup_name] where [condition]</td>
+            <td class="ex">| inputlookup threat_ip_list
+| inputlookup watchlist.csv where risk_score > 8</td>
+            <td class="job"><span class="b b-hunt">HUNT</span><br>Search a lookup table directly as a data source. Start a query FROM a threat intel list, not from events. Use to build watchlist-driven hunting: "find all events involving known-bad IPs."</td>
+          </tr>
+          <tr>
+            <td class="cmd">| outputlookup</td>
+            <td class="spl">| outputlookup [lookup_name]</td>
+            <td class="ex">index=windows EventCode=4625
+| stats count by src_ip
+| where count > 50
+| outputlookup brute_force_ips.csv</td>
+            <td class="job"><span class="b b-pro">PRO</span><br>Write search results to a lookup table. Create dynamic threat lists from search results — automatically populate a blocklist of IPs that exceeded brute-force thresholds.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| append</td>
+            <td class="spl">| append [subsearch]</td>
+            <td class="ex">index=windows EventCode=4624
+| append [search index=linux sourcetype=auth_log action=success]
+| stats count by user</td>
+            <td class="job"><span class="b b-pro">PRO</span><br>Combine results from two different searches. Correlate Windows and Linux logins in one unified user activity view. Slower than union — use <code style="color:var(--orange)">| union</code> for large datasets.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| join</td>
+            <td class="spl">| join [type=] [field] [subsearch]</td>
+            <td class="ex">index=firewall action=allowed
+| join src_ip
+  [search index=threat_feeds | rename ip as src_ip]
+| table src_ip, dest_ip, threat_type</td>
+            <td class="job"><span class="b b-hunt">HUNT</span><br>SQL-style join between two searches on a common field. Join firewall allowed traffic with threat intel to find connections to known-bad IPs that weren't blocked. Use sparingly — expensive operation.</td>
+          </tr>
+          <tr>
+            <td class="cmd">| union</td>
+            <td class="spl">| union [subsearch1] [subsearch2]</td>
+            <td class="ex">| union
+  [search index=windows EventCode=4624]
+  [search index=linux sourcetype=secure action=accepted]</td>
+            <td class="job"><span class="b b-pro">PRO</span><br>More efficient than append for combining large result sets. All results combined into one pipeline. Use for cross-platform correlation — Windows + Linux + cloud authentication events in one view.</td>
+          </tr>
+          <tr>
+            <td class="cmd">tstats</td>
+            <td class="spl">| tstats [func] from datamodel=[model] where [filter] by [field]</td>
+            <td class="ex">| tstats count from datamodel=Network_Traffic
+  where All_Traffic.action=blocked
+  by All_Traffic.src_ip, All_Traffic.dest_port</td>
+            <td class="job"><span class="b b-pro">PRO</span><span class="b b-crit">CRITICAL</span><br>Accelerated stats using data models (CIM). <strong>10-100x faster than regular stats</strong> on large datasets. Use on CIM-compliant data models: Network_Traffic, Authentication, Endpoint, Web. Production SOC standard.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- THREAT HUNTING -->
+  <div id="section-hunting" class="section">
+    <div class="sec-title">THREAT HUNTING QUERIES</div>
+    <div class="sec-desc">Ready-to-run SPL queries for proactive threat hunting. These are the searches that find attackers who bypassed your preventive controls.</div>
+    <div class="int-box">
+      <div class="lbl">// 🎯 INTERVIEW GOLD</div>
+      "How do you hunt for lateral movement in Splunk?" Answer: <strong style="color:var(--amber)">index=windows EventCode=4624 Logon_Type=3 | stats dc(host) as unique_hosts by user | where unique_hosts > 5 | sort -unique_hosts</strong>. Type 3 = network logon. One user hitting many hosts = lateral movement or compromised credential misuse.
+    </div>
+    <div class="table-wrap">
+      <table id="table-hunting">
+        <thead><tr><th>HUNT</th><th>SPL QUERY</th><th>THRESHOLD / INDICATOR</th><th>WHAT IT DETECTS</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="cmd">Brute Force Login</td>
+            <td class="spl">index=windows EventCode=4625
+| stats count as failures by src_ip, user
+| where failures > 10
+| sort -failures</td>
+            <td class="ex">failures > 10 in time window
+Same src_ip, many usernames = spray
+Same username, many src_ips = stuffing</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Failed logins (4625) grouped by source. High count = brute force. Many users from one IP = password spray. Many IPs for one user = credential stuffing. Tune threshold per environment baseline.</td>
+          </tr>
+          <tr>
+            <td class="cmd">Successful Login After Failures</td>
+            <td class="spl">index=windows (EventCode=4625 OR EventCode=4624)
+| stats count(eval(EventCode=4625)) as fails,
+  count(eval(EventCode=4624)) as success by user, src_ip
+| where fails > 5 AND success > 0
+| sort -fails</td>
+            <td class="ex">Failures followed by success = compromise
+High fail:success ratio</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><span class="b b-ir">IR</span><br>The most important authentication query — brute force succeeded. Many 4625s followed by a 4624 from same source = account compromise. Correlates fail and success in one query.</td>
+          </tr>
+          <tr>
+            <td class="cmd">Lateral Movement</td>
+            <td class="spl">index=windows EventCode=4624 Logon_Type=3
+| stats dc(host) as unique_hosts,
+  values(host) as host_list by user
+| where unique_hosts > 5
+| sort -unique_hosts</td>
+            <td class="ex">Logon Type 3 = network logon
+unique_hosts > baseline = suspicious</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><span class="b b-hunt">HUNT</span><br>Network logons (Type 3) to many different hosts by single user = lateral movement. Normal users log into 1-3 hosts. Admins maybe 10. Compromised account or attacker moving laterally = many hosts in short window.</td>
+          </tr>
+          <tr>
+            <td class="cmd">Pass-the-Hash Detection</td>
+            <td class="spl">index=windows EventCode=4624
+  Logon_Type=3 Logon_Process=NtLmSsp
+  WorkstationName!="-"
+| stats count by user, src_ip, host
+| where count > 3</td>
+            <td class="ex">NTLM auth + Logon Type 3
+No Kerberos = no ticket = hash used</td>
+            <td class="job"><span class="b b-attack">HUNT</span><br>Pass-the-Hash uses NTLM auth (not Kerberos). NTLM network logons to multiple machines = PtH indicator. Legitimate domain auth uses Kerberos. NTLM at scale is anomalous in modern AD environments.</td>
+          </tr>
+          <tr>
+            <td class="cmd">Impossible Travel</td>
+            <td class="spl">index=auth action=success
+| lookup geo_ip src_ip OUTPUT country
+| sort user _time
+| streamstats current=f last(country) as prev_country,
+  last(_time) as prev_time by user
+| eval time_diff=(_time-prev_time)/3600
+| where country!=prev_country AND time_diff < 2
+| table user, prev_country, country, time_diff</td>
+            <td class="ex">Login from two countries within 2 hours
+Physical travel impossible</td>
+            <td class="job"><span class="b b-hunt">HUNT</span><span class="b b-pro">PRO</span><br>Two logins from different countries within time window that makes physical travel impossible. Classic compromised credential or VPN/proxy usage indicator. Requires GeoIP lookup.</td>
+          </tr>
+          <tr>
+            <td class="cmd">DNS Beaconing</td>
+            <td class="spl">index=dns
+| stats count, dc(query) as unique_q,
+  avg(bytes) as avg_bytes by src_ip, dest_ip
+| where count > 100 AND unique_q < 5
+| sort -count</td>
+            <td class="ex">High frequency, low unique domains
+Regular time intervals
+Long random subdomain names</td>
+            <td class="job"><span class="b b-hunt">HUNT</span><span class="b b-crit">CRITICAL</span><br>C2 beaconing via DNS: high query count, few unique domains (repetitive callback), regular intervals. Combine with: <code style="color:var(--orange)">| where len(query) > 50</code> to catch DNS tunneling with long encoded subdomains.</td>
+          </tr>
+          <tr>
+            <td class="cmd">Unusual Process Execution</td>
+            <td class="spl">index=endpoint sourcetype=sysmon EventCode=1
+| stats count by ParentImage, Image
+| where count < 5
+| sort count</td>
+            <td class="ex">Rare parent-child process pairs
+cmd.exe spawning from Word/Excel
+PowerShell from unusual parents</td>
+            <td class="job"><span class="b b-hunt">HUNT</span><br>Sysmon Event 1 = process creation. Rare parent-child combos = malicious execution. <code style="color:var(--orange)">winword.exe → cmd.exe</code> = macro malware. <code style="color:var(--orange)">excel.exe → powershell.exe</code> = spear phishing execution.</td>
+          </tr>
+          <tr>
+            <td class="cmd">Large Data Exfiltration</td>
+            <td class="spl">index=firewall
+| stats sum(bytes_out) as total_out,
+  sum(bytes_in) as total_in by src_ip, dest_ip
+| eval ratio=round(total_out/total_in,2)
+| where total_out > 100000000 OR ratio > 10
+| sort -total_out</td>
+            <td class="ex">bytes_out > 100MB to external IP
+Out:In ratio > 10:1 = sending much more than receiving</td>
+            <td class="job"><span class="b b-hunt">HUNT</span><span class="b b-crit">CRITICAL</span><br>Outbound/inbound ratio anomaly. Normal web browsing = more IN than OUT. Exfiltration = much more OUT than IN. Total bytes threshold catches bulk transfer. High ratio catches slow-and-low exfil.</td>
+          </tr>
+          <tr>
+            <td class="cmd">New Admin Account</td>
+            <td class="spl">index=windows EventCode=4728 OR EventCode=4732
+  Group_Name IN ("Administrators","Domain Admins","Enterprise Admins")
+| table _time, user, Group_Name, SubjectUserName, host
+| sort -_time</td>
+            <td class="ex">EventCode 4728 = domain group add
+EventCode 4732 = local group add
+Privileged group membership changes</td>
+            <td class="job"><span class="b b-ir">IR</span><span class="b b-crit">CRITICAL</span><br>User added to privileged group = privilege escalation or persistence mechanism. Attackers create admin accounts for persistence. Alert on ANY addition to Administrators, Domain Admins, or Enterprise Admins.</td>
+          </tr>
+          <tr>
+            <td class="cmd">PowerShell Encoded Commands</td>
+            <td class="spl">index=windows sourcetype="WinEventLog:Microsoft-Windows-PowerShell/Operational"
+  EventCode=4104
+| search ScriptBlockText="*-enc*" OR ScriptBlockText="*encodedcommand*"
+  OR ScriptBlockText="*[Convert]::FromBase64*"
+| table _time, host, user, ScriptBlockText</td>
+            <td class="ex">-EncodedCommand flag = base64 payload
+FromBase64String = encoded execution
+Obfuscation to bypass detection</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><span class="b b-hunt">HUNT</span><br>Encoded PowerShell = almost always malicious. Legitimate admins don't encode commands. Event 4104 = PS script block logging (must be enabled). One of the highest-fidelity detections in Windows environments.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- WINDOWS EVENTS -->
+  <div id="section-windows" class="section">
+    <div class="sec-title">CRITICAL WINDOWS EVENT IDs</div>
+    <div class="sec-desc">Windows Event IDs are the SOC analyst's alphabet. Know these cold — they appear in every interview and every real investigation.</div>
+    <div class="qgrid">
+      <div class="qcard">
+        <div class="qcard-title">AUTHENTICATION (4600s)</div>
+        <div class="qi"><span class="qi-cmd">4624</span><span class="qi-desc">Successful logon</span></div>
+        <div class="qi"><span class="qi-cmd">4625</span><span class="qi-desc">Failed logon</span></div>
+        <div class="qi"><span class="qi-cmd">4634</span><span class="qi-desc">Account logoff</span></div>
+        <div class="qi"><span class="qi-cmd">4647</span><span class="qi-desc">User initiated logoff</span></div>
+        <div class="qi"><span class="qi-cmd">4648</span><span class="qi-desc">Logon with explicit credentials</span></div>
+        <div class="qi"><span class="qi-cmd">4672</span><span class="qi-desc">Special privileges assigned</span></div>
+        <div class="qi"><span class="qi-cmd">4768</span><span class="qi-desc">Kerberos TGT request</span></div>
+        <div class="qi"><span class="qi-cmd">4769</span><span class="qi-desc">Kerberos service ticket</span></div>
+        <div class="qi"><span class="qi-cmd">4771</span><span class="qi-desc">Kerberos pre-auth failed</span></div>
+        <div class="qi"><span class="qi-cmd">4776</span><span class="qi-desc">NTLM auth attempt</span></div>
+      </div>
+      <div class="qcard">
+        <div class="qcard-title">ACCOUNT MANAGEMENT (4700s)</div>
+        <div class="qi"><span class="qi-cmd">4720</span><span class="qi-desc">User account created</span></div>
+        <div class="qi"><span class="qi-cmd">4722</span><span class="qi-desc">User account enabled</span></div>
+        <div class="qi"><span class="qi-cmd">4723</span><span class="qi-desc">Password change attempt</span></div>
+        <div class="qi"><span class="qi-cmd">4724</span><span class="qi-desc">Password reset attempt</span></div>
+        <div class="qi"><span class="qi-cmd">4725</span><span class="qi-desc">User account disabled</span></div>
+        <div class="qi"><span class="qi-cmd">4726</span><span class="qi-desc">User account deleted</span></div>
+        <div class="qi"><span class="qi-cmd">4728</span><span class="qi-desc">User added to global group</span></div>
+        <div class="qi"><span class="qi-cmd">4732</span><span class="qi-desc">User added to local group</span></div>
+        <div class="qi"><span class="qi-cmd">4756</span><span class="qi-desc">User added to universal group</span></div>
+        <div class="qi"><span class="qi-cmd">4767</span><span class="qi-desc">User account unlocked</span></div>
+      </div>
+      <div class="qcard">
+        <div class="qcard-title">PROCESS & EXECUTION</div>
+        <div class="qi"><span class="qi-cmd">4688</span><span class="qi-desc">Process created (native)</span></div>
+        <div class="qi"><span class="qi-cmd">4689</span><span class="qi-desc">Process terminated</span></div>
+        <div class="qi"><span class="qi-cmd">Sysmon 1</span><span class="qi-desc">Process creation (detailed)</span></div>
+        <div class="qi"><span class="qi-cmd">Sysmon 3</span><span class="qi-desc">Network connection</span></div>
+        <div class="qi"><span class="qi-cmd">Sysmon 7</span><span class="qi-desc">DLL loaded</span></div>
+        <div class="qi"><span class="qi-cmd">Sysmon 8</span><span class="qi-desc">Remote thread created</span></div>
+        <div class="qi"><span class="qi-cmd">Sysmon 11</span><span class="qi-desc">File created</span></div>
+        <div class="qi"><span class="qi-cmd">PS 4103</span><span class="qi-desc">PS module logging</span></div>
+        <div class="qi"><span class="qi-cmd">PS 4104</span><span class="qi-desc">PS script block logging</span></div>
+      </div>
+      <div class="qcard">
+        <div class="qcard-title">OBJECT ACCESS & POLICY</div>
+        <div class="qi"><span class="qi-cmd">4663</span><span class="qi-desc">Object access attempt</span></div>
+        <div class="qi"><span class="qi-cmd">4698</span><span class="qi-desc">Scheduled task created</span></div>
+        <div class="qi"><span class="qi-cmd">4699</span><span class="qi-desc">Scheduled task deleted</span></div>
+        <div class="qi"><span class="qi-cmd">4702</span><span class="qi-desc">Scheduled task updated</span></div>
+        <div class="qi"><span class="qi-cmd">4719</span><span class="qi-desc">Audit policy changed</span></div>
+        <div class="qi"><span class="qi-cmd">4946</span><span class="qi-desc">Firewall rule added</span></div>
+        <div class="qi"><span class="qi-cmd">7045</span><span class="qi-desc">New service installed</span></div>
+        <div class="qi"><span class="qi-cmd">4657</span><span class="qi-desc">Registry value modified</span></div>
+      </div>
+      <div class="qcard">
+        <div class="qcard-title">LOGON TYPE CODES</div>
+        <div class="qi"><span class="qi-cmd">Type 2</span><span class="qi-desc">Interactive (local console)</span></div>
+        <div class="qi"><span class="qi-cmd">Type 3</span><span class="qi-desc">Network (lateral movement!)</span></div>
+        <div class="qi"><span class="qi-cmd">Type 4</span><span class="qi-desc">Batch (scheduled tasks)</span></div>
+        <div class="qi"><span class="qi-cmd">Type 5</span><span class="qi-desc">Service (service accounts)</span></div>
+        <div class="qi"><span class="qi-cmd">Type 7</span><span class="qi-desc">Unlock (screen unlock)</span></div>
+        <div class="qi"><span class="qi-cmd">Type 8</span><span class="qi-desc">NetworkCleartext (dangerous!)</span></div>
+        <div class="qi"><span class="qi-cmd">Type 9</span><span class="qi-desc">NewCredentials (runas)</span></div>
+        <div class="qi"><span class="qi-cmd">Type 10</span><span class="qi-desc">RemoteInteractive (RDP)</span></div>
+        <div class="qi"><span class="qi-cmd">Type 11</span><span class="qi-desc">CachedInteractive</span></div>
+      </div>
+      <div class="qcard">
+        <div class="qcard-title">SPLUNK QUERIES BY EVENT ID</div>
+        <div class="qi"><span class="qi-cmd">index=win EventCode=4624 Logon_Type=10</span><span class="qi-desc">RDP logins</span></div>
+        <div class="qi"><span class="qi-cmd">index=win EventCode=4698</span><span class="qi-desc">New scheduled tasks</span></div>
+        <div class="qi"><span class="qi-cmd">index=win EventCode=7045</span><span class="qi-desc">New services (persistence)</span></div>
+        <div class="qi"><span class="qi-cmd">index=win EventCode=4719</span><span class="qi-desc">Audit policy tampering</span></div>
+        <div class="qi"><span class="qi-cmd">index=win EventCode=4769 Ticket_Options=0x40810000</span><span class="qi-desc">Kerberoasting</span></div>
+        <div class="qi"><span class="qi-cmd">index=win EventCode=4771</span><span class="qi-desc">Kerberos pre-auth fail (AS-REP)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NETWORK -->
+  <div id="section-network" class="section">
+    <div class="sec-title">NETWORK & FIREWALL ANALYSIS</div>
+    <div class="sec-desc">SPL queries for network traffic analysis, firewall log investigation, and detecting network-based attacks.</div>
+    <div class="table-wrap">
+      <table id="table-network">
+        <thead><tr><th>USE CASE</th><th>SPL QUERY</th><th>EXAMPLE / THRESHOLD</th><th>WHAT IT FINDS</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="cmd">Top Talkers</td>
+            <td class="spl">index=firewall
+| stats sum(bytes_out) as bytes by src_ip
+| sort -bytes
+| head 20
+| eval gb=round(bytes/1073741824,2)</td>
+            <td class="ex">Top 20 by outbound bytes
+GB-level transfers flagged</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Find hosts sending most data outbound. Exfiltration candidates are at the top. Convert to GB for readability. Cross-reference with business justification — unauthorized bulk transfer = incident.</td>
+          </tr>
+          <tr>
+            <td class="cmd">Port Scan Detection</td>
+            <td class="spl">index=firewall action=blocked
+| stats dc(dest_port) as ports_hit by src_ip
+| where ports_hit > 20
+| sort -ports_hit</td>
+            <td class="ex">One src scanning >20 ports = scan
+High port count in short window</td>
+            <td class="job"><span class="b b-hunt">HUNT</span><span class="b b-crit">CRITICAL</span><br>Distinct count of destination ports per source. Normal hosts hit a handful of ports. Scanners hit dozens or hundreds. Blocked traffic is most telling — attacker scanning perimeter will be blocked.</td>
+          </tr>
+          <tr>
+            <td class="cmd">C2 Beaconing</td>
+            <td class="spl">index=firewall action=allowed
+| bucket span=1h _time
+| stats count by _time, src_ip, dest_ip
+| stats stdev(count) as jitter, avg(count) as rate by src_ip, dest_ip
+| where jitter < 2 AND rate > 5
+| sort jitter</td>
+            <td class="ex">Low standard deviation = regular intervals
+Regular connections to external IP = C2</td>
+            <td class="job"><span class="b b-hunt">HUNT</span><span class="b b-pro">PRO</span><br>C2 beacons fire at regular intervals — low standard deviation in hourly counts. Low jitter + sustained rate to external IP = automated beacon. One of the most sophisticated network hunting queries.</td>
+          </tr>
+          <tr>
+            <td class="cmd">Blocked Traffic Spike</td>
+            <td class="spl">index=firewall action=blocked
+| timechart span=5m count as blocked_count
+| where blocked_count > 1000</td>
+            <td class="ex">Sudden spike in blocked traffic
+DDoS or scanning campaign start</td>
+            <td class="job"><span class="b b-soc">SOC</span><br>Sudden spike in blocked connections = attack start. DDoS, port scan campaign, or vulnerability exploitation attempt. Timechart reveals the pattern — sustained vs spike.</td>
+          </tr>
+          <tr>
+            <td class="cmd">Outbound to Unusual Ports</td>
+            <td class="spl">index=firewall direction=outbound
+  NOT dest_port IN (80,443,53,22,25,465,587,993,995)
+| stats count, dc(dest_ip) as unique_dest by src_ip, dest_port
+| where count > 5
+| sort -count</td>
+            <td class="ex">Internal host connecting outbound on non-standard port
+Reverse shells often use 4444, 1234, 8888</td>
+            <td class="job"><span class="b b-hunt">HUNT</span><br>Outbound on unusual ports = C2, reverse shell, or policy violation. Exclude common legitimate ports. Find internal hosts beaconing out on Metasploit defaults (4444) or custom C2 ports.</td>
+          </tr>
+          <tr>
+            <td class="cmd">DNS Exfiltration</td>
+            <td class="spl">index=dns query_type=A
+| eval domain_len=len(query)
+| where domain_len > 50
+| stats count, avg(domain_len) as avg_len by src_ip, query
+| sort -count</td>
+            <td class="ex">Query length > 50 chars
+Subdomain is base64/hex encoded data</td>
+            <td class="job"><span class="b b-hunt">HUNT</span><span class="b b-crit">CRITICAL</span><br>DNS tunneling uses long subdomains to encode exfiltrated data. Normal FQDNs rarely exceed 30-40 chars. 50+ character queries to one domain = data smuggling via DNS.</td>
+          </tr>
+          <tr>
+            <td class="cmd">Firewall Rule Changes</td>
+            <td class="spl">index=firewall sourcetype=cisco:asa
+  OR sourcetype=pan:config
+  message_type="config-change"
+| table _time, user, host, change_detail
+| sort -_time</td>
+            <td class="ex">Any firewall rule modification
+Especially rules that open inbound access</td>
+            <td class="job"><span class="b b-ir">IR</span><br>Attackers modify firewall rules to allow inbound access for persistence or to open RDP/SSH. Any unexpected firewall change = potential compromise indicator. Alert on all firewall config changes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ALERTS -->
+  <div id="section-alerts" class="section">
+    <div class="sec-title">ALERT ENGINEERING & SAVED SEARCHES</div>
+    <div class="sec-desc">Building production-grade detections in Splunk. The difference between a junior and senior analyst is building alerts that are <em>precise</em> — high signal, low noise.</div>
+    <div class="tip-box">
+      <div class="lbl">// GURU TIP — ALERT QUALITY FRAMEWORK</div>
+      Every alert you build should answer four questions: <strong style="color:var(--amber)">1)</strong> What does it detect? <strong style="color:var(--amber)">2)</strong> What's the false positive rate? <strong style="color:var(--amber)">3)</strong> What's the baseline threshold? <strong style="color:var(--amber)">4)</strong> What's the response action? Interviewers love when you talk about tuning, not just writing the initial query.
+    </div>
+    <div class="table-wrap">
+      <table id="table-alerts">
+        <thead><tr><th>DETECTION</th><th>PRODUCTION SPL</th><th>TUNE / THRESHOLD</strong></th><th>DEPLOYMENT NOTES</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="cmd">Brute Force Alert</td>
+            <td class="spl">index=windows EventCode=4625
+  earliest=-15m latest=now
+| stats count as failures by src_ip, user, host
+| where failures >= 10
+| eval alert="BRUTE_FORCE"
+| table _time, src_ip, user, host, failures, alert</td>
+            <td class="ex">Run every 5 min, window 15 min
+Threshold: 10 failures / 15 min
+Tune: exclude service accounts, exclude known scanners</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Schedule as Splunk Alert: every 5 minutes, rolling 15-min window. Trigger condition: number of results > 0. Add lookup to whitelist known pentest IPs. Suppress for 1 hour after first fire to avoid alert fatigue.</td>
+          </tr>
+          <tr>
+            <td class="cmd">Admin Group Change</td>
+            <td class="spl">index=windows EventCode IN (4728,4732,4756)
+  Group_Name IN ("Administrators","Domain Admins","Enterprise Admins","Schema Admins")
+  earliest=-5m latest=now
+| table _time, SubjectUserName, MemberName, Group_Name, host</td>
+            <td class="ex">Run every 5 min
+Any result = alert (zero tolerance)
+No tuning — every change must be reviewed</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><span class="b b-alert">ALERT</span><br>Zero-tolerance detection. Any addition to privileged groups should fire immediately. Severity: CRITICAL. Alert destination: SOC + CISO. This detection has essentially no false positives in well-managed environments.</td>
+          </tr>
+          <tr>
+            <td class="cmd">New Local Admin</td>
+            <td class="spl">index=windows EventCode=4732
+  Group_Name="Administrators"
+  NOT SubjectUserName IN ("SYSTEM","*$")
+  earliest=-5m
+| lookup authorized_admins SubjectUserName OUTPUT approved
+| where isnull(approved)
+| table _time, SubjectUserName, MemberName, host</td>
+            <td class="ex">Filter out machine accounts (*$)
+Lookup against authorized admin list
+Alert on unapproved additions only</td>
+            <td class="job"><span class="b b-pro">PRO</span><br>Enhanced version using lookup to compare against approved admin list. Only alerts when unauthorized account is added. Shows lookup-driven alert engineering — reduces noise without missing real threats.</td>
+          </tr>
+          <tr>
+            <td class="cmd">High-Volume DNS</td>
+            <td class="spl">index=dns earliest=-1h
+| stats count as queries, dc(query) as unique_q by src_ip
+| where queries > 1000 AND unique_q > 500
+| eval threat=if(unique_q/queries > 0.9,"DGA_SUSPECT","HIGH_VOLUME")
+| sort -queries</td>
+            <td class="ex">1000+ queries/hr = high volume
+unique_q/count > 0.9 = DGA suspect
+(random domains = each one unique)</td>
+            <td class="job"><span class="b b-alert">ALERT</span><span class="b b-pro">PRO</span><br>High ratio of unique-to-total queries = Domain Generation Algorithm (DGA) malware. DGA generates random domains to find C2 — nearly every domain is unique. The ratio calculation is a sophisticated DGA indicator.</td>
+          </tr>
+          <tr>
+            <td class="cmd">After-Hours Activity</td>
+            <td class="spl">index=windows EventCode=4624 Logon_Type=2
+  earliest=-1h latest=now
+| eval hour=tonumber(strftime(_time,"%H"))
+| eval day=strftime(_time,"%A")
+| where (hour < 7 OR hour > 22)
+  OR day IN ("Saturday","Sunday")
+| lookup vip_users user OUTPUT is_vip
+| where isnull(is_vip)
+| table _time, user, host, hour, day</td>
+            <td class="ex">Interactive logins outside 7am-10pm
+Weekend logins for non-VIP users
+Tune: exclude on-call staff, exclude VIPs</td>
+            <td class="job"><span class="b b-hunt">HUNT</span><br>After-hours interactive logons for non-exempt users. Attackers often operate during off-hours to avoid detection. strftime extracts hour and day from timestamp. VIP lookup excludes legitimate after-hours workers.</td>
+          </tr>
+          <tr>
+            <td class="cmd">Scheduled Task Created</td>
+            <td class="spl">index=windows EventCode=4698
+  earliest=-5m latest=now
+  NOT TaskName IN ("\\Microsoft\\*","\\Adobe\\*","\\Google\\*")
+| eval cmd=lower(TaskContent)
+| where match(cmd,"powershell|cmd\.exe|wscript|cscript|mshta|regsvr32|rundll32")
+| table _time, user, TaskName, TaskContent, host</td>
+            <td class="ex">Non-Microsoft scheduled tasks
+Tasks running suspicious LOLBins
+Persistence via scheduled task</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Persistence detection. Attackers create scheduled tasks to survive reboots. Filter out known-good Microsoft/vendor tasks. Flag any task running LOLBins (Living Off The Land Binaries) like PowerShell, mshta, regsvr32.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- INTERVIEW -->
+  <div id="section-interview" class="section">
+    <div class="sec-title">🎯 INTERVIEW SCENARIOS</div>
+    <div class="sec-desc">Real SPL questions from SOC analyst, threat hunter, and Splunk admin interviews. With full answers, reasoning, and production-grade query patterns.</div>
+    <div class="table-wrap">
+      <table id="table-interview">
+        <thead><tr><th>QUESTION</th><th>ANSWER QUERY</th><th>WHY THIS IS THE RIGHT ANSWER</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="cmd" style="white-space:normal;font-size:11px;">"Write SPL to find all failed logins in the last 24 hours, grouped by user"</td>
+            <td class="spl">index=windows EventCode=4625
+  earliest=-24h
+| stats count as failures by user
+| sort -failures
+| head 20</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Shows index+EventCode filtering, time range, stats aggregation, sort, and result limiting. Mention you'd also add <code style="color:var(--orange)">| where failures > 5</code> in production to cut noise, and potentially cross-reference with 4624 (successful) events.</td>
+          </tr>
+          <tr>
+            <td class="cmd" style="white-space:normal;font-size:11px;">"How would you detect a compromised account being used for lateral movement?"</td>
+            <td class="spl">index=windows EventCode=4624
+  Logon_Type=3 earliest=-24h
+| stats dc(host) as unique_hosts,
+  values(host) as accessed_hosts by user
+| where unique_hosts > 5
+| sort -unique_hosts</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>Logon Type 3 = network logon. One user accessing many hosts = lateral movement. dc() for count, values() for list. Mention establishing a baseline (normal users = 1-3 hosts) to tune the threshold appropriately per environment.</td>
+          </tr>
+          <tr>
+            <td class="cmd" style="white-space:normal;font-size:11px;">"What's the difference between stats and tstats?"</td>
+            <td class="spl">-- stats: searches raw events
+index=main | stats count by src_ip
+
+-- tstats: searches accelerated data models
+| tstats count from datamodel=Network_Traffic
+  by All_Traffic.src_ip</td>
+            <td class="job"><span class="b b-crit">CRITICAL</span><br>tstats operates on pre-indexed, accelerated data models (CIM). 10-100x faster on large datasets. Requires data to be CIM-mapped. Use tstats for dashboards and production alerts. Use stats for ad-hoc searches on unstructured data.</td>
+          </tr>
+          <tr>
+            <td class="cmd" style="white-space:normal;font-size:11px;">"How do you build an alert for unauthorized after-hours access?"</td>
+            <td class="spl">index=windows EventCode=4624
+  Logon_Type=2 earliest=-1h
+| eval hour=tonumber(strftime(_time,"%H"))
+| where hour < 7 OR hour > 22
+| lookup approved_afterhours user OUTPUT exempt
+| where isnull(exempt)
+| table _time, user, host</td>
+            <td class="job"><span class="b b-pro">PRO</span><br>Shows strftime for time extraction, eval for derived fields, lookup for whitelisting. Mention: schedule every 30 min, suppress for 4 hours after first fire, route to on-call SOC team. Shows you think about operationalizing, not just writing the query.</td>
+          </tr>
+          <tr>
+            <td class="cmd" style="white-space:normal;font-size:11px;">"Walk me through your process when you get an alert for suspicious PowerShell"</td>
+            <td class="spl">-- 1. Get full context
+index=windows EventCode=4104 host=[host]
+  earliest=-1h
+| table _time, user, ScriptBlockText
+
+-- 2. Check parent process
+index=windows Sysmon EventCode=1 host=[host]
+  Image="*powershell*" earliest=-1h
+| table _time, ParentImage, CommandLine, User</td>
+            <td class="job"><span class="b b-ir">IR</span><span class="b b-crit">CRITICAL</span><br>Shows IR methodology: get the full script (4104), check parent process (Sysmon 1 — what launched PowerShell?), check network connections (Sysmon 3), check files created (Sysmon 11). Shows you investigate, not just acknowledge alerts.</td>
+          </tr>
+          <tr>
+            <td class="cmd" style="white-space:normal;font-size:11px;">"How do you reduce false positives in a brute force detection?"</td>
+            <td class="spl">index=windows EventCode=4625
+  earliest=-15m
+| stats count as failures by src_ip, user
+| where failures >= 10
+-- Add these to reduce FPs:
+| lookup service_accounts user OUTPUT is_service
+| where isnull(is_service)
+| lookup known_scanners src_ip OUTPUT is_scanner
+| where isnull(is_scanner)
+| where NOT match(user,"^\$$")</td>
+            <td class="job"><span class="b b-pro">PRO</span><span class="b b-alert">ALERT</span><br>Three FP reduction techniques: 1) Exclude service accounts (they fail auth legitimately), 2) Whitelist known pentest/scanner IPs, 3) Exclude machine accounts (end in $). Mention: review alert history, adjust threshold based on baseline, add asset context with lookup.</td>
+          </tr>
+          <tr>
+            <td class="cmd" style="white-space:normal;font-size:11px;">"What Splunk data models do you use and why?"</td>
+            <td class="spl">-- Authentication events
+| tstats from datamodel=Authentication
+
+-- Network traffic
+| tstats from datamodel=Network_Traffic
+
+-- Endpoint (processes, files, registry)
+| tstats from datamodel=Endpoint
+
+-- Web (HTTP proxy/IDS)
+| tstats from datamodel=Web
+
+-- Alerts (IDS/IPS/AV)
+| tstats from datamodel=Alerts</td>
+            <td class="job"><span class="b b-pro">PRO</span><span class="b b-crit">CRITICAL</span><br>CIM (Common Information Model) data models normalize data across different sources. Authentication works for Windows, Linux, VPN, cloud. Network_Traffic works for Palo Alto, Cisco, pfSense. Mention: tstats is faster because data models are pre-indexed/accelerated by Splunk.</td>
+          </tr>
+          <tr>
+            <td class="cmd" style="white-space:normal;font-size:11px;">"How do you investigate a potential data exfiltration incident?"</td>
+            <td class="spl">-- Step 1: Find top outbound talkers
+index=firewall src_ip=[suspect]
+| stats sum(bytes_out) as total_out by dest_ip
+| sort -total_out
+
+-- Step 2: Timeline the activity
+index=firewall src_ip=[suspect]
+| timechart span=1h sum(bytes_out)
+
+-- Step 3: Identify destination
+| lookup geo_ip dest_ip OUTPUT country, org
+| where country != "US"</td>
+            <td class="job"><span class="b b-ir">IR</span><span class="b b-crit">CRITICAL</span><br>Show methodology: quantify (how much?), timeline (when did it start?), destination (where did it go?). Mention: check for staging (internal to internal large transfer before external), check for compression/archive activity on endpoint (Sysmon), check email for large attachments.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip-box">
+      <div class="lbl">// GURU — THE COMPLETE SPLUNK INVESTIGATION WORKFLOW</div>
+      When given a Splunk environment to investigate: <strong style="color:var(--amber)">1)</strong> Check index inventory — <code style="color:var(--orange)">| eventcount summarize=false index=*</code> → <strong style="color:var(--amber)">2)</strong> Understand sourcetypes — <code style="color:var(--orange)">index=* | stats count by sourcetype | sort -count</code> → <strong style="color:var(--amber)">3)</strong> Establish timeline — timechart to see when events started/spiked → <strong style="color:var(--amber)">4)</strong> Pivot on affected entities (user/host/IP) → <strong style="color:var(--amber)">5)</strong> Correlate across sourcetypes → <strong style="color:var(--amber)">6)</strong> Build timeline → <strong style="color:var(--amber)">7)</strong> Document with saved searches and notable events. That's how a senior analyst works.
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div><span>SPLUNK</span> GOD LEVEL CHEATSHEET — SOC · THREAT HUNTING · DFIR · SIEM</div>
+  <div>Built by <a href="https://www.linkedin.com/in/dr-niladri-biswas/" target="_blank">Dr. Niladri Biswas</a> — <span>linkedin.com/in/dr-niladri-biswas</span></div>
+</footer>
+
+<script>
+  function showTab(name, el) {
+    document.querySelectorAll('.section').forEach(s => { s.classList.remove('active'); s.style.display = ''; });
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    el.classList.add('active');
+    document.getElementById('searchInput').value = '';
+    document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('hidden'));
+  }
+
+  function filterAll() {
+    const val = document.getElementById('searchInput').value.toLowerCase().trim();
+    if (!val) {
+      document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('hidden'));
+      return;
+    }
+    document.querySelectorAll('.section').forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('tbody tr').forEach(row => {
+      if (row.textContent.toLowerCase().includes(val)) {
+        row.classList.remove('hidden');
+        const sec = row.closest('.section');
+        if (sec) { sec.style.display = 'block'; sec.classList.add('active'); }
+      } else {
+        row.classList.add('hidden');
+      }
+    });
+  }
+</script>
+</body>
+</html>
